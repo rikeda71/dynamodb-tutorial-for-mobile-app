@@ -37,6 +37,34 @@ type Photo struct {
 	Location  string
 }
 
+type QuickPhoto struct {
+	PK            string   `dynamo:"PK,hash" json:"PK"`
+	SK            string   `dynamo:",range" json:"SK"`
+	Address       string   `dynamo:"address" json:"address"`
+	Birthdate     string   `dynamo:"birthdate" json:"birthdate"`
+	Email         string   `dynamo:"email" json:"email"`
+	Name          string   `dynamo:"name" json:"name"`
+	Username      string   `dynamo:"username" json:"username"`
+	Status        string   `dynamo:"status" json:"status"`
+	Interests     []string `dynamo:"interests" json:"interests"`
+	Followers     int      `dynamo:"followers" json:"followers"`
+	Following     int      `dynamo:"following" json:"following"`
+	PinnedImage   string   `dynamo:"pinnedImage" json:"pinnedImage"`
+	Timestamp     string   `dynamo:"timestamp" json:"timestamp"`
+	FollowedUser  string   `dynamo:"followedUser" json:"followedUser"`
+	FollowingUser string   `dynamo:"followingUser" json:"followingUser"`
+	Location      string   `dynamo:"location" json:"location"`
+	Reactions     struct {
+		PlusOne    int `dynamo:"+1" json:"+1"`
+		Smiley     int `dynamo:"smiley" json:"smiley"`
+		Sunglasses int `dynamo:"sunglasses" json:"sunglasses"`
+		Heart      int `dynamo:"heart" json:"heart"`
+	} `dynamo:"reactions" json:"reactions"`
+	ReactingUser string `dynamo:"reactingUser" json:"reactingUser"`
+	Photo        string `dynamo:"photo" json:"photo"`
+	ReactionType string `dynamo:"reactionType" json:"reactionType"`
+}
+
 func NewUserFromDynamoDbQueryResult(out *dynamodb.QueryOutput) *User {
 	if len(out.Items) == 0 {
 		return &User{}
@@ -120,10 +148,11 @@ func main() {
 	}
 	user := NewUserFromDynamoDbQueryResult(resp)
 	fmt.Println(user)
-	// TODO
-	// var v interface{}
-	// t.Get("PK", fmt.Sprintf("USER#%s", USER)).
-	// 	Range("SK", dynamo.Between, fmt.Sprintf("#METADATA%s", USER), aws.String("PHOTO$")).
-	// 	All(&v)
-	// fmt.Println(v)
+
+	// "github.com/guregu/dynamo" を使った場合は map ではなく、struct として取得できる
+	quickPhotos := make([]QuickPhoto, 0)
+	t.Get("PK", fmt.Sprintf("USER#%s", USER)).
+		Range("SK", dynamo.Between, fmt.Sprintf("#METADATA#%s", USER), aws.String("PHOTO$")).
+		All(&quickPhotos)
+	fmt.Println(quickPhotos)
 }
